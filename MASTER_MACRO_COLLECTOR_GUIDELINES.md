@@ -327,7 +327,42 @@ CREATE TABLE IF NOT EXISTS <schema>.logs (
 
 ### 5.4 Portability
 
-DDL must run on both PostgreSQL and Databricks SQL. Use their common subset: `GENERATED ALWAYS AS IDENTITY`, `DOUBLE`, bounded `VARCHAR`, `DATE`, and `TIMESTAMP`. Avoid PostgreSQL-only `SERIAL`, `JSONB`, and dialect-specific conveniences. All queries use `sqlalchemy.text(...)` and named parameters.
+DDL must run on both PostgreSQL and Databricks SQL. `GENERATED ALWAYS AS IDENTITY`, bounded `VARCHAR`, `DATE`, and `TIMESTAMP` are common to both. Avoid PostgreSQL-only `SERIAL`, `JSONB`, and dialect-specific conveniences. All queries use `sqlalchemy.text(...)` and named parameters.
+
+**The 64-bit float has no common spelling.** An earlier revision of this section
+listed `DOUBLE` as portable. It is not:
+
+| Spelling | PostgreSQL | Databricks SQL |
+|---|---|---|
+| `DOUBLE` | rejected, no such type | 8-byte `DoubleType` |
+| `DOUBLE PRECISION` | 8-byte `float8` | rejected, not in the Spark grammar |
+| `FLOAT` | 8-byte `float8` | **4-byte `FloatType`** |
+| `REAL` | 4-byte `float4` | 4-byte `FloatType` |
+| `FLOAT(53)` | 8-byte `float8` | rejected, no precision argument |
+
+Spark documents `DOUBLE` as the only alias for `DoubleType`, and its
+`trivialPrimitiveType` grammar rule spells out aliases for other types
+(`INT|INTEGER`, `FLOAT|REAL`, `DECIMAL|DEC|NUMERIC`) while listing `DOUBLE`
+alone. `FLOAT` is the dangerous option rather than the escape hatch: both
+engines accept it, so it fails silently at half the intended precision instead
+of erroring.
+
+Select the spelling from the engine dialect in `init_db.py`, the same way
+`metadata.py` selects `MERGE`:
+
+```python
+DOUBLE_TYPES = {"postgresql": "DOUBLE PRECISION"}
+DEFAULT_DOUBLE_TYPE = "DOUBLE"
+
+
+def double_type(dialect: str) -> str:
+    """Return the 64-bit float spelling this SQL dialect accepts."""
+    return DOUBLE_TYPES.get(dialect, DEFAULT_DOUBLE_TYPE)
+```
+
+Verified in `collector_ons_cpi`: `python -m scripts.init_db` succeeds against a
+clean PostgreSQL 16 and `information_schema` reports `double precision` for
+`time_series.value` and `weights.weight`.
 
 ---
 
@@ -648,12 +683,36 @@ Verify:
 
 Derived weights are exceptional. Preserve official weights and prove that the derived system reproduces the intended metric. Never overwrite the official basket.
 
-For a modified-Laspeyres variation weight, an accepted pattern is:
+For a modified-Laspeyres variation weight, price-update the child weights to
+the source's **price reference period**, not simply to the previous month:
 
 ```text
-phi_i(t) = w_i(t) * I_i(t-1) /
-           sum_{j in children(parent)} w_j(t) * I_j(t-1)
+phi_i(t) = w_i(t) * I_i(t-1)/I_i(ref) /
+           sum_{j in children(parent)} w_j(t) * I_j(t-1)/I_j(ref)
 ```
+
+`ref` is the month whose prices the index compares against, which the source
+defines. Dropping the `I_i(ref)` term — writing `phi_i(t) = w_i(t) * I_i(t-1) /
+sum_j w_j(t) * I_j(t-1)` — is only valid when every child shares one index level
+at `ref`. That holds when the indices are re-referenced to the price reference
+period, and fails whenever the source publishes levels on a fixed base.
+
+Establish `ref` from the source's own aggregation methodology before
+implementing, and reconcile against published data rather than assuming. Two
+worked examples from ONS UK CPI, whose Table 38 publishes 2015=100 levels that
+are never re-referenced to January:
+
+- `ref` is January of the current year for February through December, and the
+  preceding December for the January link, because the series chains in
+  December. For the January link the term collapses to plain normalized
+  weights, since `I_i(t-1)` and `I_i(ref)` are the same month.
+- Over 8,251 parent-months the price-updated form leaves a maximum absolute
+  residual of 0.0020 pp — the rounding granularity of the published
+  one-decimal levels — against 3.56 pp for the form without the `I_i(ref)`
+  term. At a 0.10 pp tolerance that is 0 breaches versus 330.
+
+A residual that grows through the year and resets in January is the signature
+of a missing price-update term, not of source methodology.
 
 ### 11.4 Audit-friendly validation export
 
