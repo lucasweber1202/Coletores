@@ -53,7 +53,7 @@ Do not generate a new repository until all inputs below are known:
 | `DATASET` | Short dataset identifier, e.g. `ENCUESTA`, `SIDRA1737`, `CPI` |
 | `SOURCE_NAME` | Human-readable agency name |
 | `RELEASE_NAME` | Human-readable dataset/release name |
-| `COUNTRY` | Fleet-approved 3-letter currency/country code for `metadata.country` |
+| `COUNTRY` | Fleet-approved 3-letter ISO 4217 currency code for `metadata.country` |
 | `DOCS_URL` | Official documentation URL |
 | `TARGET_SERIES` | Curated series list and source-native IDs |
 | `INTENDED_FREQUENCY` | Intended modelling cadence; mandatory when series must be curated |
@@ -218,7 +218,7 @@ Mandatory semantics:
 
 - `series_id`: structured, unique, parseable identifier.
 - `name` and `description`: faithful English descriptions of the source series.
-- `country`: approved three-letter fleet vocabulary. In the present fleet this is commonly the ISO 4217 currency code (e.g. `BRL`, `USD`, `MXN`); verify the live guideline before adding a new code.
+- `country`: approved three-letter fleet vocabulary. This is the **ISO 4217 currency code** of the economy the series describes (e.g. `BRL`, `USD`, `MXN`, `GBP`, `RUB`), never an ISO 3166 country code: `GBR`, `BRA` and `USA` are not fleet values. The column is named `country` for historical reasons; its vocabulary is currency. A shared-currency economy that needs its own code, and any other genuinely new code, must be added to this guideline before a collector emits it.
 - `frequency`: the source's native publication frequency, never the desired modelling frequency.
 - `unit`: normalized fleet unit.
 - `first_observation`, `last_observation`, `observation_count`: calculated from the post-write `time_series` table with `COUNT(DISTINCT reference_date)`.

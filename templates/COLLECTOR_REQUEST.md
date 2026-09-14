@@ -9,8 +9,8 @@ Copy this file for one source/dataset and complete every required field.
 - Proposed repository: `collector_<source>_<dataset>`
 - SOURCE_NAME:
 - RELEASE_NAME:
-- COUNTRY:
-- Country/currency code:
+- COUNTRY (country name, for humans):
+- ISO 4217 currency code for `metadata.country` (e.g. GBP, BRL, USD):
 
 ## Analytical intent
 
