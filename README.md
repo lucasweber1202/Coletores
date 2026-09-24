@@ -20,6 +20,9 @@ Repositório central para organizar, especificar e acompanhar a criação de col
 - `intake/`: backlog dos países, fontes e datasets.
 - `templates/`: formulário reutilizável para iniciar um coletor.
 - `docs/WORKFLOW.md`: estados, critérios de passagem e handoff.
+- `docs/UK_FLEET_CERTIFICATION.md`: estado certificado da frota UK, com evidência por gate.
+- `VERBATIM_MANIFEST.md` e `scripts/check_verbatim_drift.py`: hashes esperados dos arquivos VERBATIM e verificação de drift.
+- `INTERNATIONAL_FLEET_BOOTSTRAP.md`: como criar uma nova frota de país usando UK como baseline.
 
 ## Regra central
 
