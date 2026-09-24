@@ -28,10 +28,10 @@ earlier certification.
 | collector_ons_awe_uk | 096e6cd | 64a4e9b | #4 | FIXED | PASS | PASS | PASS | PR open |
 | collector_ons_bics_uk | 38e7b58 | 4309e83 | #4 | FIXED | FIXED | PASS | PASS | BLOCKED — methodology decision |
 | collector_ons_business_prices_uk | 2c88a6d | f2e7f2e | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_ons_cpi | 6687e56 | fa9c69c | #18 | PASS | PASS | PASS | PASS | PR open |
-| collector_ons_ex_cpi | 23d61f9 | 030dc82 | #15 | PASS | PASS | PASS | PASS | PR open |
+| collector_ons_cpi | 6687e56 | 33a1228 | #18 | PASS | PASS | PASS | PASS | PR open |
+| collector_ons_ex_cpi | 23d61f9 | **b29915c (merged)** | #15 | PASS | PASS | PASS | PASS | **MERGED** |
 | collector_ons_housing_uk | 8a06dd6 | 2a736bc | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_orr_uk | e40876f | fdb13b4 | #4 | FIXED | PASS | PASS | PASS | PR open |
+| collector_orr_uk | e40876f | **f99d045 (merged)** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
 | collector_predictor_template | 9017bfe | d9469ab | #7 | PASS | n/a | PASS | PASS | PR open |
 
 ## The defect that defined this round
@@ -69,6 +69,19 @@ Both guards are now in all 18 repositories.
 
 BRC and CBI raise `PendingVendorDiscoveryError` naming their own remediation —
 the correct outcome on an unentitled machine, not a code failure.
+
+## Post-merge verification
+
+`collector_ons_ex_cpi#15` and `collector_orr_uk#4` merged on 2026-09-24. Both
+were re-verified **from a fresh clone of merged `main`**, not from the branch:
+
+| Repository | main | Result |
+| --- | --- | --- |
+| collector_orr_uk | f99d045 | 347 passed, ruff and mypy clean; `--start-date` reaches the namespace |
+| collector_ons_ex_cpi | b29915c | 169 passed, ruff and mypy clean |
+
+Both merges landed complete: no branch commit was left behind, and both fleet
+guards (CLI contract, standalone architecture) are present on `main`.
 
 ## Gates executed
 
