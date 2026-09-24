@@ -15,24 +15,24 @@ earlier certification.
 
 | Repository | Initial SHA | Certified SHA | PR | Entrypoint | Live source | PostgreSQL | PIT | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| collector_boe_dmp_uk | 2ecd28c | c59c0c6 | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_boe_fx_uk | d0585bc | 6c72ccd | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_brc_uk | a377c5e | b8b9759 | #8 | PASS | GATED | PASS | PASS | READY_WITH_ENVIRONMENT_GATE |
-| collector_cbi_uk | 9f7db3c | c51441c | #9 | PASS | GATED | PASS | PASS | READY_WITH_ENVIRONMENT_GATE |
-| collector_defra_uk | df2e22d | d390745 | #11 | PASS | PASS | PASS | PASS | PR open |
-| collector_desnz_uk | 54e5c49 | 17cc8ea | #10 | PASS | PASS | PASS | PASS | PR open |
-| collector_dft_uk | 8749600 | 1481d6e | #10 | PASS | PASS | PASS | PASS | PR open |
-| collector_elexon_uk | 3286948 | e56f3fd | #11 | PASS | PASS | PASS | PASS | PR open |
-| collector_hmrc_uk | f965bca | 8f654c1 | #10 | PASS | PASS | PASS | PASS | PR open |
-| collector_ofgem_uk | 91bfb55 | 2b8ef66 | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_ons_awe_uk | 096e6cd | 64a4e9b | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_ons_bics_uk | 38e7b58 | 4309e83 | #4 | FIXED | FIXED | PASS | PASS | BLOCKED — methodology decision |
-| collector_ons_business_prices_uk | 2c88a6d | f2e7f2e | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_ons_cpi | 6687e56 | fa9c69c | #18 | PASS | PASS | PASS | PASS | PR open |
-| collector_ons_ex_cpi | 23d61f9 | 030dc82 | #15 | PASS | PASS | PASS | PASS | PR open |
-| collector_ons_housing_uk | 8a06dd6 | 2a736bc | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_orr_uk | e40876f | fdb13b4 | #4 | FIXED | PASS | PASS | PASS | PR open |
-| collector_predictor_template | 9017bfe | d9469ab | #7 | PASS | n/a | PASS | PASS | PR open |
+| collector_boe_dmp_uk | 2ecd28c | **8f0a64d** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_boe_fx_uk | d0585bc | **41f9735** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_brc_uk | a377c5e | **c1b725a** | #8 | PASS | GATED | PASS | PASS | **MERGED** — READY_WITH_ENVIRONMENT_GATE |
+| collector_cbi_uk | 9f7db3c | **575499e** | #9 | PASS | GATED | PASS | PASS | **MERGED** — READY_WITH_ENVIRONMENT_GATE |
+| collector_defra_uk | df2e22d | **95ad091** | #11 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_desnz_uk | 54e5c49 | **c36ef3c** | #10 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_dft_uk | 8749600 | **008c258** | #10 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_elexon_uk | 3286948 | **bcc601e** | #11 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_hmrc_uk | f965bca | **613f490** | #10 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_ofgem_uk | 91bfb55 | **4465cff** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_ons_awe_uk | 096e6cd | **b22ab54** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_ons_bics_uk | 38e7b58 | **bf63d25** | #4 | FIXED | FIXED | PASS | PASS | **BLOCKED** — methodology decision |
+| collector_ons_business_prices_uk | 2c88a6d | **a216ea6** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_ons_cpi | 6687e56 | **f8a035e** | #18 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_ons_ex_cpi | 23d61f9 | **b29915c** | #15 | PASS | PASS | PASS | PASS | **MERGED** |
+| collector_ons_housing_uk | 8a06dd6 | **b5380d2** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_orr_uk | e40876f | **f99d045** | #4 | FIXED | PASS | PASS | PASS | **MERGED** |
+| collector_predictor_template | 9017bfe | **c12185c** | #7 | PASS | n/a | PASS | PASS | **MERGED** |
 
 ## The defect that defined this round
 
@@ -69,6 +69,28 @@ Both guards are now in all 18 repositories.
 
 BRC and CBI raise `PendingVendorDiscoveryError` naming their own remediation —
 the correct outcome on an unentitled machine, not a code failure.
+
+## Post-merge verification
+
+All 20 pull requests from this round merged on 2026-09-24. Every claim below was
+then re-verified **against merged `main`**, not against the branch that produced
+it, because a merge is the only state a governance claim may rest on.
+
+- **21,459 tests pass across the 18 collector repositories on `main`**, with the
+  opt-in gates (`ONS_LIVE_TEST`, `DATABRICKS_SQL_PARSE_TEST`, `POSTGRES_TEST_URL`)
+  enabled; ruff and mypy clean in all 18.
+- **The entrypoint works in all 18 on `main`**: `--start-date` defaults to `None`
+  and parses an explicit value. The `AttributeError` that broke 8 of 17
+  collectors is gone from production.
+- **VERBATIM: 17 paths byte-identical across all 18 `main` branches**, by Git blob hash.
+- **Both fleet guards present in all 18 on `main`.**
+- **No cross-repository import, `sys.path` manipulation, tracked secret or tracked
+  raw payload** anywhere on `main`.
+
+One caveat on method: an earlier run of this verification reported failures on
+merged `main`. That was wrong — the local PostgreSQL server had died, and the
+errors were `connection refused`, not defects. The numbers above are from the
+re-run with the server up.
 
 ## Gates executed
 
